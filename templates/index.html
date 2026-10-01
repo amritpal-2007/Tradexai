@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1221">
+  <meta name="description" content="TradeX AI: an educational preview of a fictional market chart and paper-trading platform. No real financial prices or payments.">
+  <title>TradeX AI — Public Demo Preview</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+  {% if test_checkout %}<script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>{% endif %}
+</head>
+<body data-logged="{{ '1' if user else '0' }}" data-tier="{{ user.tier if user else 'FREE' }}">
+  <div class="announcement"><span class="pulse"></span> ACCOUNT TEST PREVIEW <span class="sep">•</span> Listed company names; FICTIONAL prices and charts <span class="sep">•</span> No live charges</div>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="TradeX AI home"><span class="brandmark">T<span>↗</span></span><strong>TRADEX <em>AI</em></strong></a>
+    <nav aria-label="Main navigation"><a href="#terminal">Demo terminal</a><a href="#pricing">Membership</a><a href="#about">About</a></nav>
+    {% if user %}<div class="header-account"><span title="Account name">{{ user.name }} · {{ 'PRO TEST' if user.tier in ('PRO_TEST','LOCAL_PRO') else 'FREE' }}</span><form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="outline small" type="submit">Sign out</button></form></div>{% else %}<div class="header-account"><a class="outline small" href="{{ url_for('login') }}">Sign in</a><a class="primary small" href="{{ url_for('register') }}">Create account</a></div>{% endif %}
+  </header>
+  <main>
+    <section class="intro" id="home">
+      <div><div class="eyebrow"><span class="eyedot"></span> EDUCATIONAL TRADING PLATFORM</div>
+        <h1>Learn the markets.<br><span>Practice with confidence.</span></h1>
+        <p>Explore searchable Indian stock listings with clearly simulated practice prices. View interactive charts and experience how virtual portfolio tools could work, without risking real money.</p>
+        <div class="hero-actions"><a class="primary" href="#terminal">Explore the terminal <span aria-hidden="true">→</span></a><a class="outline" href="#pricing">See membership plans</a></div>
+        <div class="hero-foot"><span>✧ No deposit required</span><span>✧ Fictional practice data</span><span>✧ Made for learning</span></div>
+      </div>
+      <div class="feature-card"><div class="feature-heading"><span>TRADEX PREVIEW</span><span class="tag">SAMPLE SESSION</span></div>
+        <div class="feature-value" id="hero-price">₹—</div><div class="feature-sub">Fictional exercise quote • Not a market price</div>
+        <div class="spark" id="hero-spark" aria-hidden="true"></div><div class="feature-bottom"><span>Simulated session</span><strong>09:15 – 15:30 IST</strong></div>
+      </div>
+    </section>
+    <section class="terminal section" id="terminal">
+      <div class="section-head"><div><div class="eyebrow">PRODUCT WALKTHROUGH</div><h2>TradeX trading terminal</h2><p>Browse NSE/BSE company listings and simulated intraday charts free. Create an account to save virtual progress; only verified test Pro or local development Pro can trade.</p></div><span class="sample-label">SEARCHABLE LISTINGS • FULLY SIMULATED PRICES</span></div>
+      <div class="workspace">
+        <aside class="sidebar card" aria-label="Fictional sample stocks">
+          <div class="aside-label">SEARCH INDIAN COMPANIES</div>
+          <label class="directory-search-label" for="stock-search">Company or symbol</label>
+          <input id="stock-search" class="stock-search" type="search" placeholder="Reliance, TCS, 500325..." autocomplete="off" maxlength="100">
+          <label class="directory-search-label" for="stock-exchange">Exchange</label>
+          <select id="stock-exchange" class="stock-exchange"><option value="ALL">NSE + BSE</option><option value="NSE">NSE</option><option value="BSE">BSE</option></select>
+          <p class="directory-status" id="directory-status" aria-live="polite">Loading stock directory...</p>
+          <div id="search-results" class="search-results" role="group" aria-label="Directory search results"></div>
+          <div class="directory-pages"><button type="button" id="search-prev" disabled>Previous</button><button type="button" id="search-next" disabled>Next</button></div>
+          <div class="aside-label recent-label">RECENTLY VIEWED</div>
+          <div id="symbol-list" class="symbol-list" role="group" aria-label="Select fictional symbol"></div>
+          <div class="aside-info"><strong>Why fictional stocks?</strong><br>Company names are reference listings. All chart prices and executed paper trades are entirely simulated, never actual stock quotes.</div>
+        </aside>
+        <div class="main-panel">
+          <div class="panel card">
+            <div class="panel-head"><div><div class="symbol-name" id="symbol-name">Select a company</div><div class="subtle" id="symbol-code">DEMO-A • Example instrument</div></div><div class="quote"><strong id="last-price">₹—</strong><span id="sample-change">Simulated</span></div></div>
+            {% if local_research %}<div class="research-switch"><button id="simulation-mode" class="mode-button active" type="button">Virtual chart</button><button id="research-mode" class="mode-button" type="button">Historical market data (local only)</button></div><p id="research-disclosure" class="research-disclosure" role="status">Historical mode is for private research and can be delayed; Buy/Sell is disabled while viewing it.</p>{% endif %}
+            <div class="toolbar"><div class="seg" aria-label="Chart timeframe"><button type="button" class="interval" data-interval="1">1m</button><button type="button" class="interval active" data-interval="5">5m</button><button type="button" class="interval" data-interval="15">15m</button><button type="button" class="interval" data-interval="30">30m</button></div><div class="chart-state"><span class="green-dot"></span> Simulated 09:15–15:30 IST</div></div>
+            <div class="chart-wrap"><canvas id="chart" role="img" aria-label="Generated fictional price candlestick chart"></canvas><div class="tooltip" id="chart-tip" hidden></div></div>
+            <div class="chart-foot"><span>09:15 IST</span><span>Fictional trading session</span><span>15:30 IST</span></div>
+            <div class="indicator-line" id="indicator-line">Indicators: Sample Pro preview only.</div>
+          </div>
+          <div class="bottom-grid">
+            <div class="card trade-card"><div class="card-title"><strong>Virtual trading</strong><span id="access-label" class="pill">FREE • VIEW ONLY</span></div>
+              <p id="access-message" class="subtle">Buy and Sell are locked on Free. Test Pro access is verified on the server.</p>
+              <div class="plan-toggle"><button type="button" class="toggle-on" id="free-button">View plan</button><button type="button" id="pro-button">Membership</button></div>
+              <label for="quantity">Sample quantity</label><input id="quantity" type="number" min="1" max="100000" step="1" value="1" inputmode="numeric">
+              <div class="trade-buttons"><button type="button" class="buy" id="buy-button" disabled>Virtual Buy</button><button type="button" class="sell" id="sell-button" disabled>Virtual Sell</button></div>
+              <p class="note" id="trade-status" role="status" aria-live="polite">Preview only. No financial transactions.</p>
+            </div>
+            <div class="card portfolio-card"><div class="card-title"><strong>Sample portfolio</strong><span class="pill dim">{{ 'SAVED TO YOUR ACCOUNT' if user else 'SIGN IN TO SAVE' }}</span></div><div class="balance-caption">Virtual cash</div><div class="balance" id="wallet">₹1,00,000.00</div><div class="stats"><div><small>Portfolio invested</small><strong id="invested">₹0.00</strong></div><div><small>Sample equity</small><strong id="equity">₹1,00,000.00</strong></div></div><div class="holdings"><div class="subtle smallcap">SAMPLE HOLDINGS</div><div id="positions" class="positions">No sample trades yet.</div></div><button type="button" id="reset-button" class="subtle-action" disabled>Reset sample portfolio</button></div>
+          </div>
+          <div class="card history-card"><div class="card-title"><strong>Activity</strong><span class="subtle">Illustrative virtual trades only</span></div><div class="history" id="history">Sign in to view saved fictional trade history.</div></div>
+        </div>
+      </div>
+    </section>
+    <section class="plans section" id="pricing"><div class="center"><div class="eyebrow">MEMBERSHIP</div><h2>Clear plans for every learner</h2><p>Free accounts can explore examples. TradeX Pro is ₹999/month. The UPI AutoPay flow below uses Razorpay TEST keys only. No real charge.</p></div><div class="plan-grid">
+      <div class="plan card"><span class="plan-name">TRADEX FREE</span><h3>Start exploring</h3><div class="price">₹0 <span>/month</span></div><ul><li>Search NSE and BSE company listings</li><li>1m/5m/15m/30m fictional charts</li><li>Read-only portfolio preview</li><li>Learn the basic interface</li></ul><a class="outline plan-action" href="#terminal">Explore Free</a></div>
+      <div class="plan card pro-plan"><div class="plan-tag">TEST UPI AUTOPAY • NO REAL CHARGE</div><span class="plan-name">TRADEX PRO</span><h3>Practice more deeply</h3><div class="price">₹999 <span>/month · recurring TEST</span></div><ul><li>Everything in Free</li><li>Virtual Buy and Sell functionality</li><li>Per-account saved fictional portfolio</li><li>20-bar moving-average indicator</li><li>Saved practice portfolio and history</li></ul><a class="primary plan-action" href="{{ url_for('register') if not user else '#terminal' }}" id="sample-pro-link">{{ 'Sign up for Free' if not user else 'Explore membership options' }}</a><div class="small-print">₹999/month, billed monthly if launched commercially. This TEST mandate has 12 billing cycles; it is not indefinite. Merchant UPI AutoPay must be enabled in Razorpay TEST mode. Real charges are disabled.</div>
+      {% if user and local_demo %}<button id="local-pro-button" type="button" class="outline plan-action">Enable local test Pro (free)</button>{% endif %}
+      {% if user and test_checkout %}
+      <div class="autopay-controls">
+        <label class="test-consent"><input id="autopay-consent" type="checkbox"> I understand this is a TEST mandate representing ₹999 every month for 12 billing cycles. No real money will be deducted. I will select UPI in checkout, if supported by the test account.</label>
+        <button id="test-checkout-button" type="button" class="primary plan-action">Set up ₹999 UPI AutoPay (TEST)</button>
+        <div class="subscription-actions"><button id="subscription-status-button" type="button" class="outline small">Refresh subscription status</button><button id="test-cancel-button" type="button" class="outline small">Cancel TEST AutoPay</button></div>
+      </div>
+      {% endif %}
+      {% if user %}<p id="membership-status" class="small-print" role="status" aria-live="polite">Current account: {{ user.tier }}. Test checkout is {{ 'enabled' if test_checkout else 'disabled' }}.</p>{% endif %}</div>
+    </div></section>
+    <section class="notice-section section" id="about"><div class="notice-box"><span class="eyebrow">BUILT RESPONSIBLY</span><h2>A demonstration today.<br>A complete platform tomorrow.</h2><p>This MVP includes NSE/BSE directory search, server-side accounts, and separate fictional portfolios, but does not distribute real-market prices or place brokerage orders. When enabled, Razorpay UPI AutoPay TEST checkout simulates twelve ₹999 monthly billing cycles and never makes a real charge. TEST Pro is granted only after verified UPI status and payment confirmation.</p><p>Real paid release still requires independent security testing, durable paid database hosting, legal review, and lawful commercial market-data arrangements.</p></div></section>
+  </main>
+  <footer><span class="brand"><span class="brandmark">T<span>↗</span></span><strong>TRADEX <em>AI</em></strong></span><span>Fictional educational preview • No real trading • No investment advice</span><span>© TradeX AI</span></footer>
+</body>
+</html>
